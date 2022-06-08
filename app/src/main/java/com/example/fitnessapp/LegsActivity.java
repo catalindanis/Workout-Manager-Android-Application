@@ -46,6 +46,13 @@ public class LegsActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onUserLeaveHint()
+    {
+        listData();
+        super.onUserLeaveHint();
+    }
+
+    @Override
     public void onBackPressed()
     {
         //showFileContent();
@@ -93,8 +100,9 @@ public class LegsActivity extends AppCompatActivity {
 //        }
         try {
             String exerciseName = "", series, weights;
-            int seriesNumber, reps[] = new int[50];
-            float seriesWeight[] = new float[50];
+            int seriesNumber;
+            String seriesWeight[] = new String[50];
+            String reps[] = new String[50];
             int numberOfExercises = 0;
 
             inputStream = this.openFileInput("legs_database.txt");
@@ -117,8 +125,8 @@ public class LegsActivity extends AppCompatActivity {
                 //Log.d("verify",series);
                 //Log.d("verify",weights);
                 for(int j=0;j<seriesNumber;j++){
-                    reps[j] = Integer.parseInt(series.split(" ")[j]);
-                    seriesWeight[j] = Float.parseFloat(weights.split(" ")[j]);
+                    reps[j] = series.split(" ")[j];
+                    seriesWeight[j] = weights.split(" ")[j];
                 }
 
                 addLastExercise(exerciseName,seriesNumber,reps,seriesWeight);
@@ -183,7 +191,7 @@ public class LegsActivity extends AppCompatActivity {
         last_index++;
     }
 
-    private void addLastExercise(String name,int series,int reps[],float weights[]) {
+    private void addLastExercise(String name,int series,String reps[],String weights[]) {
         View exerciseLayout = getLayoutInflater().inflate(R.layout.exercise,null);
 
         TextView exerciseName = (TextView) exerciseLayout.findViewById(R.id.exerciseNameLayout);
@@ -199,13 +207,13 @@ public class LegsActivity extends AppCompatActivity {
             seriesReps.setWidth(150);
             seriesReps.setHeight(150);
             seriesReps.setLines(1);
-            seriesReps.setText(String.valueOf(reps[i]));
+            seriesReps.setText(reps[i]);
 
             EditText seriesWeight = new EditText(this);
             seriesWeight.setWidth(150);
             seriesWeight.setHeight(150);
             seriesWeight.setLines(1);
-            seriesWeight.setText(String.valueOf(weights[i]));
+            seriesWeight.setText(weights[i]);
 
             layoutReps.addView(seriesReps);
             layoutWeight.addView(seriesWeight);
@@ -237,14 +245,14 @@ public class LegsActivity extends AppCompatActivity {
                 View reps = layoutReps.getChildAt(j);
                 TextView repsText = (TextView) reps;
                 if(repsText.getText().toString().isEmpty())
-                    exercise.reps[i][j] = 0;
-                else exercise.reps[i][j] = Integer.valueOf(repsText.getText().toString());
+                    exercise.reps[i][j] = "-";
+                else exercise.reps[i][j] = repsText.getText().toString();
 
                 View weight = layoutWeight.getChildAt(j);
                 TextView weightText = (TextView) weight;
                 if(weightText.getText().toString().isEmpty())
-                    exercise.weight[i][j] = 0;
-                else exercise.weight[i][j] = Float.valueOf(weightText.getText().toString());
+                    exercise.weight[i][j] = "-";
+                else exercise.weight[i][j] = weightText.getText().toString();
             }
         }
         writeToFile();

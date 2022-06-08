@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,6 +44,13 @@ public class BackActivity extends AppCompatActivity {
                 switchToAdd();
             }
         });
+    }
+
+    @Override
+    protected void onUserLeaveHint()
+    {
+        listData();
+        super.onUserLeaveHint();
     }
 
     @Override
@@ -91,10 +99,13 @@ public class BackActivity extends AppCompatActivity {
 //            Log.d("verify",e.toString());
 //            //Toast.makeText(this, e.getClass().getSimpleName()+':'+e.getMessage(), Toast.LENGTH_SHORT).show();
 //        }
+        //Log.d("tag","am intrat in readFile()");
+        showFileContent();
         try {
             String exerciseName = "", series, weights;
-            int seriesNumber, reps[] = new int[50];
-            float seriesWeight[] = new float[50];
+            int seriesNumber;
+            String seriesWeight[] = new String[50];
+            String reps[] = new String[50];
             int numberOfExercises = 0;
 
             inputStream = this.openFileInput("back_database.txt");
@@ -117,16 +128,18 @@ public class BackActivity extends AppCompatActivity {
                 //Log.d("verify",series);
                 //Log.d("verify",weights);
                 for(int j=0;j<seriesNumber;j++){
-                    reps[j] = Integer.parseInt(series.split(" ")[j]);
-                    seriesWeight[j] = Float.parseFloat(weights.split(" ")[j]);
+                    reps[j] = series.split(" ")[j];
+                    seriesWeight[j] = weights.split(" ")[j];
                 }
-
+                //Log.d("tag","intru in addLastExercise()");
                 addLastExercise(exerciseName,seriesNumber,reps,seriesWeight);
+                //Log.d("tag","adaug ex"+String.valueOf(i));
             }
         }
         catch(IOException e){
             //Log.d("verify",e.getMessage());
         }
+        //Log.d("tag","am terminat readFile");
     }
 
     private void switchToAdd(){
@@ -135,8 +148,7 @@ public class BackActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         exerciseName = data.getStringExtra("name");
         exerciseSeries = Integer.parseInt(data.getStringExtra("series"));
@@ -180,10 +192,9 @@ public class BackActivity extends AppCompatActivity {
         });
 
         myLayout.addView(exerciseLayout);
-        last_index++;
     }
 
-    private void addLastExercise(String name,int series,int reps[],float weights[]) {
+    private void addLastExercise(String name,int series,String reps[],String weights[]) {
         View exerciseLayout = getLayoutInflater().inflate(R.layout.exercise,null);
 
         TextView exerciseName = (TextView) exerciseLayout.findViewById(R.id.exerciseNameLayout);
@@ -199,18 +210,17 @@ public class BackActivity extends AppCompatActivity {
             seriesReps.setWidth(150);
             seriesReps.setHeight(150);
             seriesReps.setLines(1);
-            seriesReps.setText(String.valueOf(reps[i]));
+            seriesReps.setText(reps[i]);
 
             EditText seriesWeight = new EditText(this);
             seriesWeight.setWidth(150);
             seriesWeight.setHeight(150);
             seriesWeight.setLines(1);
-            seriesWeight.setText(String.valueOf(weights[i]));
+            seriesWeight.setText(weights[i]);
 
             layoutReps.addView(seriesReps);
             layoutWeight.addView(seriesWeight);
         }
-
         ImageButton deleteButton = (ImageButton) exerciseLayout.findViewById(R.id.imageButton);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -218,9 +228,8 @@ public class BackActivity extends AppCompatActivity {
                 myLayout.removeView(exerciseLayout);
             }
         });
-
         myLayout.addView(exerciseLayout);
-        last_index++;
+        //Log.d("tag","ies din addLastExercise");
     }
 
     private void listData(){
@@ -237,14 +246,14 @@ public class BackActivity extends AppCompatActivity {
                 View reps = layoutReps.getChildAt(j);
                 TextView repsText = (TextView) reps;
                 if(repsText.getText().toString().isEmpty())
-                    exercise.reps[i][j] = 0;
-                else exercise.reps[i][j] = Integer.valueOf(repsText.getText().toString());
+                    exercise.reps[i][j] = "-";
+                else exercise.reps[i][j] = repsText.getText().toString();
 
                 View weight = layoutWeight.getChildAt(j);
                 TextView weightText = (TextView) weight;
                 if(weightText.getText().toString().isEmpty())
-                    exercise.weight[i][j] = 0;
-                else exercise.weight[i][j] = Float.valueOf(weightText.getText().toString());
+                    exercise.weight[i][j] = "-";
+                else exercise.weight[i][j] = weightText.getText().toString();
             }
         }
         writeToFile();
@@ -322,6 +331,7 @@ public class BackActivity extends AppCompatActivity {
 
     public void write(){
         try{
+            showFileContent();
             emptyFile();
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter
                     (this.openFileOutput("back_database.txt", MODE_PRIVATE));
